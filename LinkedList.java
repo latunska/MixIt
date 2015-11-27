@@ -57,6 +57,44 @@ public class LinkedList<E> {
 		}
 	}
 	
+	public E removeAtPosition(int position) {
+		E removed;
+		if (position > counter || position < 0) {
+			throw new IllegalArgumentException();
+		}
+		else if (position == 0) {
+			removed = head.getData();
+			head = head.getNext();
+			counter--;
+			return removed;
+		}
+		else {
+			Node<E> temp = head;
+			for (int i = 0; i <= position - 2; i++) {
+				temp = temp.getNext();
+			}
+			removed = temp.getNext().getData();
+			temp.setNext(temp.getNext().getNext());
+			counter--;
+			return removed;
+		}
+	}
+	
+	public void switchPositions(int first, int second) {
+		if (first > counter || second > counter || first < 0 || second < 0) {
+			throw new IllegalArgumentException();
+		}
+		if (second < first) {
+			int temp = second;
+			second = first;
+			first = temp;
+		}
+		if (first != second) {
+			addBeforePosition(second, removeAtPosition(first));
+			addBeforePosition(first, removeAtPosition(second - 1));
+		}
+	}
+	
 	//Returns a string containing each element
 	public String getFinalMessage() {
 		Node<E> temp = head;
