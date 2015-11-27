@@ -132,4 +132,12 @@ public class LinkedList<E> {
 		}
 		return result;
 	}
+	
+	public void deleteAll() {
+		if (head != null) {
+			counter = 0;
+			head = null;
+			tail = null;
+		}
+	}
 }
