@@ -1,6 +1,14 @@
 package project4;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.JOptionPane;
 
 public class Mix implements IMix {
 	/** Linked list of characters representing a message (string) */ 
@@ -8,9 +16,12 @@ public class Mix implements IMix {
 	
 	private LinkedList<Character> clipboard;
 	
+	private ArrayList<String> commands;
+	
 	public Mix() {
 		message = new LinkedList<Character>();
 		clipboard = new LinkedList<Character>();
+		commands = new ArrayList<String>();
 		Scanner scnr = new Scanner(System.in);
 		System.out.println("Enter intial message: ");
 		String input = scnr.nextLine();
@@ -23,6 +34,7 @@ public class Mix implements IMix {
 				break;
 			else {
 				System.out.println(processCommand(command));
+				commands.add(0, command);
 			}
 		}
 		System.out.println("Final Message: " + message.getFinalMessage());
@@ -68,6 +80,19 @@ public class Mix implements IMix {
 			int start = Integer.parseInt(tokens[1]);
 			pasteFromClipboard(start);
 		}
+		else if (tokens[0].equalsIgnoreCase("c")) {
+			int start = Integer.parseInt(tokens[1]);
+			int end = Integer.parseInt(tokens[2]);
+			copyToClipboard(start, end);
+		}
+		else if (tokens[0].equalsIgnoreCase("s")) {
+			String filename = tokens[1];
+			try {
+				save(filename);
+			} catch (IOException e) {
+				System.out.println("Could not create file.");
+			}
+		}
 		else {
 			System.out.println("Command not found");
 		}
@@ -107,6 +132,47 @@ public class Mix implements IMix {
 			for (int i = 1; i < clipboard.getCounter() + 1; i++) {
 				message.addBeforePosition(start + i, clipboard.copyAtPosition(i));
 			}
+		}
+	}
+	
+	private void copyToClipboard(int start, int end) {
+		if (start > end || start < 0 || end > message.getCounter()) {
+			throw new IllegalArgumentException();
+		}
+		else {
+			clipboard.deleteAll();
+			System.out.println(clipboard.getFinalMessage());
+			for (int i = start + 1; i <= end + 1; i++) {
+				clipboard.addToEnd(message.copyAtPosition(i));
+			}
+		}
+	}
+	
+	public void save(String name) throws IOException {
+		File file = new File(name);
+		file.createNewFile();
+		try {
+			// FileWriter writes text files in the default encoding.
+			FileWriter writer = new FileWriter(file);
+
+			// BufferWriter holds the text
+			BufferedWriter buffer = new BufferedWriter(writer);
+
+			for(String i : commands) {
+				buffer.write(i,0,i.length());
+				buffer.newLine();
+			}
+			buffer.close();         
+		}
+		catch(FileNotFoundException ex) {
+			JOptionPane.showMessageDialog(null,
+					"Unable to open file '" + 
+							file + "");                
+		}
+		catch (IOException ex) {
+			JOptionPane.showMessageDialog(null,
+					"Error reading file '" 
+							+ file + "");                  
 		}
 	}
 	
