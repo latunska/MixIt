@@ -24,14 +24,12 @@ public class LinkedList<E> {
 			head = new Node<E>(null, data);
 			tail = head;
 			counter++;
-			System.out.println("Added " + data);
 		}
 		else {
 			Node<E> temp = new Node<E>(null, data);
 			tail.setNext(temp);
 			tail = temp;
 			counter++;
-			System.out.println("Added " + data);
 		}
 	}
 	
@@ -92,6 +90,24 @@ public class LinkedList<E> {
 		if (first != second) {
 			addBeforePosition(second, removeAtPosition(first));
 			addBeforePosition(first, removeAtPosition(second - 1));
+		}
+	}
+	
+	public E copyAtPosition(int position) {
+		if (position < 0 || position > counter) {
+			throw new IllegalArgumentException();
+		}
+		//Something weird here, had to skip over position 0 or else
+		//repeated 0
+		else if (position == 0) {
+			return head.getData();
+		}
+		else {
+			Node<E> temp = head;
+			for (int i = 1; i <= position - 1; i++) {
+				temp = temp.getNext();
+			}
+			return temp.getData();
 		}
 	}
 	
