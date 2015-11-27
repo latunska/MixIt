@@ -24,11 +24,35 @@ public class LinkedList<E> {
 			head = new Node<E>(null, data);
 			tail = head;
 			counter++;
+			System.out.println("Added " + data);
 		}
 		else {
 			Node<E> temp = new Node<E>(null, data);
 			tail.setNext(temp);
 			tail = temp;
+			counter++;
+			System.out.println("Added " + data);
+		}
+	}
+	
+	public void addBeforePosition(int position, E data) {
+		if (position > counter + 1 || position < 0) {
+			throw new IllegalArgumentException();
+		}
+		if (position == 0) {
+			Node<E> temp = new Node<E>(head, data);
+			head = temp;
+			counter++;
+		}
+		else if (position == counter) {
+			addToEnd(data);
+		}
+		else {
+			Node<E> temp = head;
+			for (int i = 0; i <= position - 2; i++) {
+				temp = temp.getNext();
+			}
+			temp.setNext(new Node<E>(temp.getNext(), data));
 			counter++;
 		}
 	}
@@ -49,7 +73,7 @@ public class LinkedList<E> {
 		Node<E> temp = head;
 		String result = "";
 		while (temp != null) {
-			result += temp.getData() + " ";
+			result += temp.getData() + "  ";
 			temp = temp.getNext();
 		}
 		return result;
