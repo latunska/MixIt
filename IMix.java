@@ -7,4 +7,5 @@ public interface IMix {
 	/** processes the given mix command and returns the current message after processing the mix command */
 	String processCommand(String command);
 
+
 }
