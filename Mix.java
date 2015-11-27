@@ -47,6 +47,15 @@ public class Mix implements IMix {
 			int pos = Integer.parseInt(tokens[2]);
 			message.addBeforePosition(pos, c);
 		}
+		if (tokens[0].equalsIgnoreCase("r")) {
+			int pos = Integer.parseInt(tokens[1]);
+			message.removeAtPosition(pos);
+		}
+		if (tokens[0].equalsIgnoreCase("w")) {
+			int first = Integer.parseInt(tokens[1]);
+			int second = Integer.parseInt(tokens[2]);
+			message.switchPositions(first, second);
+		}
 		//Displays current message with position numbers above
 		String str = "Message: \n\t";
 		//Cycles through numbers for each element plus one
