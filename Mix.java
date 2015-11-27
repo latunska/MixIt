@@ -30,7 +30,7 @@ public class Mix implements IMix {
 		for (int i = 0; i < message.length(); i++) {
 			this.message.addToEnd(message.charAt(i));
 		}
-		
+		System.out.println("\t" + this.message.getCurrentMessage());
 	}
 
 	@Override
@@ -42,12 +42,19 @@ public class Mix implements IMix {
 			Character adding = tokens[1].charAt(0);
 			message.addToEnd(adding);
 		}
-		
+		if (tokens[0].equalsIgnoreCase("b")) {
+			Character c = tokens[1].charAt(0);
+			int pos = Integer.parseInt(tokens[2]);
+			message.addBeforePosition(pos, c);
+		}
 		//Displays current message with position numbers above
 		String str = "Message: \n\t";
 		//Cycles through numbers for each element plus one
 		for (int i = 0; i < message.getCounter() + 1; i++) {
 			str += i + " ";
+			if (i < 10) {
+				str += " ";
+			}
 		}
 		str += "\n\t" + message.getCurrentMessage();
 		return str;
