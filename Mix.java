@@ -18,10 +18,19 @@ public class Mix implements IMix {
 	
 	private ArrayList<String> commands;
 	
+	private int clipboardLength;
+	
+	private boolean isPaste, isRemoval, isCut;
+	
+	private Character removed;
+	
 	public Mix() {
 		message = new LinkedList<Character>();
 		clipboard = new LinkedList<Character>();
 		commands = new ArrayList<String>();
+		isPaste = false;
+		isRemoval = false;
+		isCut = false;
 		Scanner scnr = new Scanner(System.in);
 		System.out.println("Enter intial message: ");
 		String input = scnr.nextLine();
@@ -34,7 +43,28 @@ public class Mix implements IMix {
 				break;
 			else {
 				System.out.println(processCommand(command));
+				if (isPaste) {
+					command += " " + clipboardLength;
+				}
+				if (isCut) {
+					String str = clipboard.getFinalMessage();
+					if (str.charAt(0) == ' ') {
+						str = "%20" + str.substring(1);
+					}
+					command += " " + str;
+				}
+				if (isRemoval) {
+					System.out.println("Here");
+					if (removed == ' ') {
+						command += " %20";
+					}
+					else {
+						command += " " + removed;
+					}
+				}
 				commands.add(0, command);
+				isPaste = false;
+				isRemoval = false;
 			}
 		}
 		System.out.println("Final Message: " + message.getFinalMessage());
@@ -45,7 +75,7 @@ public class Mix implements IMix {
 		for (int i = 0; i < message.length(); i++) {
 			this.message.addToEnd(message.charAt(i));
 		}
-		System.out.println("\t" + this.message.getCurrentMessage());
+		System.out.println(displayCurrentMessage());
 	}
 
 	@Override
@@ -64,7 +94,9 @@ public class Mix implements IMix {
 		}
 		else if (tokens[0].equalsIgnoreCase("r")) {
 			int pos = Integer.parseInt(tokens[1]);
-			message.removeAtPosition(pos);
+			removed = message.removeAtPosition(pos);
+			System.out.println(removed);
+			isRemoval = true;
 		}
 		else if (tokens[0].equalsIgnoreCase("w")) {
 			int first = Integer.parseInt(tokens[1]);
@@ -72,11 +104,13 @@ public class Mix implements IMix {
 			message.switchPositions(first, second);
 		}
 		else if (tokens[0].equalsIgnoreCase("x")) {
+			isCut = true;
 			int start = Integer.parseInt(tokens[1]);
 			int end = Integer.parseInt(tokens[2]);
 			cutToClipboard(start, end);
 		}
 		else if (tokens[0].equalsIgnoreCase("p")) {
+			isPaste = true;
 			int start = Integer.parseInt(tokens[1]);
 			pasteFromClipboard(start);
 		}
@@ -96,6 +130,12 @@ public class Mix implements IMix {
 		else {
 			System.out.println("Command not found");
 		}
+		
+		String str = displayCurrentMessage();
+		return str;
+	}
+	
+	private String displayCurrentMessage() {
 		//Displays current message with position numbers above
 		String str = "Message: \n\t";
 		//Cycles through numbers for each element plus one
@@ -113,11 +153,9 @@ public class Mix implements IMix {
 		if (start > end || start < 0 || end > message.getCounter()) {
 			throw new IllegalArgumentException();
 		}
+		clipboard.deleteAll();
 		for (int i = start; i <= end; i++) {
-			Character b = message.removeAtPosition(start);
-			System.out.println(b);
-			clipboard.addToEnd(b);
-			//clipboard.addToEnd(message.removeAtPosition(start));
+			clipboard.addToEnd(message.removeAtPosition(start));
 		}
 	}
 	
@@ -129,6 +167,7 @@ public class Mix implements IMix {
 		}
 		//Iterates through clipboard and adds to message
 		else {
+			clipboardLength = clipboard.getCounter();
 			for (int i = 1; i < clipboard.getCounter() + 1; i++) {
 				message.addBeforePosition(start + i, clipboard.copyAtPosition(i));
 			}
