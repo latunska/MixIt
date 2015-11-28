@@ -76,6 +76,11 @@ public class UnMix implements IUnMix {
 	    			if (adding.length() > 2 && adding.substring(0, 3).equals("%20")) {
 	    				adding = " " + adding.substring(3);
 	    			}
+	    			if (tokens.length > 4) {
+	    				for (int i = 4; i <= tokens.length - 1; i++) {
+	    					adding += " " + tokens[i];
+	    				}
+	    			}
 	    			pasteString(start, adding);
 	    		}
 	            //Tested once and fixed
