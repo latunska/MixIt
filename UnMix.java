@@ -30,7 +30,6 @@ public class UnMix implements IUnMix {
 		enterInitialMessage(mixedMessage);
 		// This will reference one line at a time
 	    String line = null;
-	    String[] parts=null;
 	    String[]tokens;
 	    
 		try {
@@ -49,12 +48,18 @@ public class UnMix implements IUnMix {
 	    		}
 	            //Done, not tested
 	    		else if (tokens[0].equalsIgnoreCase("b")) {
-	    			int pos = Integer.parseInt(tokens[1]);
+	    			int pos = Integer.parseInt(tokens[2]);
 	    			message.removeAtPosition(pos);
 	    		}
 	            //Done, somewhat tested.
 	    		else if (tokens[0].equalsIgnoreCase("r")) {
-	    			Character c = tokens[2].charAt(0);
+	    			Character c;
+	    			if (tokens[2].equals("%20")) {
+	    				c = ' ';
+	    			}
+	    			else {
+	    				c = tokens[2].charAt(0);
+	    			}
 	    			int pos = Integer.parseInt(tokens[1]);
 	    			message.addBeforePosition(pos, c);
 	    		}
@@ -64,16 +69,20 @@ public class UnMix implements IUnMix {
 	    			int second = Integer.parseInt(tokens[2]);
 	    			message.switchPositions(first, second);
 	    		}
-	            //Done, not tested
+	            //Need to fix for if cut out part includes space
 	    		else if (tokens[0].equalsIgnoreCase("x")) {
 	    			int start = Integer.parseInt(tokens[1]);
-	    			pasteFromClipboard(start - 1);
+	    			String adding = tokens[3];
+	    			if (adding.length() > 2 && adding.substring(0, 3).equals("%20")) {
+	    				adding = " " + adding.substring(3);
+	    			}
+	    			pasteString(start, adding);
 	    		}
-	            //Done, not tested
+	            //Tested once and fixed
 	    		else if (tokens[0].equalsIgnoreCase("p")) {
 	    			int start = Integer.parseInt(tokens[1]);
 	    			int end = Integer.parseInt(tokens[2]);
-	    			cutToClipboard(start + 1, end);
+	    			cutToClipboard(start + 1, start + end);
 	    		}
 	            //Done?
 	    		else if (tokens[0].equalsIgnoreCase("c")) {
@@ -110,7 +119,13 @@ public class UnMix implements IUnMix {
 	}
 	
 	private void cutToClipboard(int start, int end) {
-		if (start > end || start < 0 || end > message.getCounter()) {
+		if (start > end ) {
+			throw new IllegalArgumentException();
+		}
+		if (start < 0 ) {
+			throw new IllegalArgumentException();
+		}
+		if (end > message.getCounter()) {
 			throw new IllegalArgumentException();
 		}
 		clipboard.deleteAll();
@@ -130,6 +145,13 @@ public class UnMix implements IUnMix {
 			}
 		}
 	}
+	
+	public void pasteString(int start, String toAdd) {
+		for (int i = 0; i < toAdd.length(); i++) {
+			message.addBeforePosition(start + i, toAdd.charAt(i));
+		}
+	}
+	
 	public static void main(String[] args) {
 		UnMix temp = new UnMix();
 	}
