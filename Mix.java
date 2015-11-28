@@ -48,10 +48,7 @@ public class Mix implements IMix {
 				}
 				if (isCut) {
 					String str = clipboard.getFinalMessage();
-					if (str.charAt(0) == ' ') {
-						str = "%20" + str.substring(1);
-					}
-					command += " " + str;
+					command += " '" + str + "'";
 				}
 				if (isRemoval) {
 					System.out.println("Here");
@@ -65,6 +62,7 @@ public class Mix implements IMix {
 				commands.add(0, command);
 				isPaste = false;
 				isRemoval = false;
+				isCut = false;
 			}
 		}
 		System.out.println("Final Message: " + message.getFinalMessage());
