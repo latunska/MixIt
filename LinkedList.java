@@ -64,7 +64,6 @@ public class LinkedList<E> {
 			removed = head.getData();
 			head = head.getNext();
 			counter--;
-			return removed;
 		}
 		else {
 			Node<E> temp = head;
@@ -74,8 +73,8 @@ public class LinkedList<E> {
 			removed = temp.getNext().getData();
 			temp.setNext(temp.getNext().getNext());
 			counter--;
-			return removed;
 		}
+		return removed;
 	}
 	
 	public void switchPositions(int first, int second) {
