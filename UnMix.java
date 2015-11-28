@@ -69,18 +69,11 @@ public class UnMix implements IUnMix {
 	    			int second = Integer.parseInt(tokens[2]);
 	    			message.switchPositions(first, second);
 	    		}
-	            //Need to fix for if cut out part includes space
 	    		else if (tokens[0].equalsIgnoreCase("x")) {
 	    			int start = Integer.parseInt(tokens[1]);
-	    			String adding = tokens[3];
-	    			if (adding.length() > 2 && adding.substring(0, 3).equals("%20")) {
-	    				adding = " " + adding.substring(3);
-	    			}
-	    			if (tokens.length > 4) {
-	    				for (int i = 4; i <= tokens.length - 1; i++) {
-	    					adding += " " + tokens[i];
-	    				}
-	    			}
+	    			int index = line.indexOf("'");
+	    			int end = line.length() - 1;
+	    			String adding = line.substring(index + 1, end);
 	    			pasteString(start, adding);
 	    		}
 	            //Tested once and fixed
@@ -91,6 +84,9 @@ public class UnMix implements IUnMix {
 	    		}
 	            //Done?
 	    		else if (tokens[0].equalsIgnoreCase("c")) {
+	    		}
+	    		else if (tokens[0].equalsIgnoreCase("s")) {
+	    			
 	    		}
 	    		else {
 	    			System.out.println("File corrupted");
