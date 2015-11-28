@@ -22,11 +22,15 @@ public class UnMix implements IUnMix {
 		String message = scnr.nextLine();
 		System.out.println("Enter in file name to unmix message: ");
 		String filename = scnr.nextLine();
-		System.out.println(UnMixUsingFile(filename, message));
+		try {
+			System.out.println(UnMixUsingFile(filename, message));
+		} catch (Exception e) {
+			System.out.println("File has been corrupted.");
+		}
 	}
 
 	@Override
-	public String UnMixUsingFile(String filename, String mixedMessage) {
+	public String UnMixUsingFile(String filename, String mixedMessage) throws Exception {
 		enterInitialMessage(mixedMessage);
 		// This will reference one line at a time
 	    String line = null;
@@ -41,57 +45,58 @@ public class UnMix implements IUnMix {
 	
 	        while((line = bufferedReader.readLine()) != null) {
 	            tokens = line.split(" ");
-	            //Done, somewhat tested.
-	            if (tokens[0].equalsIgnoreCase("a")) {
-	    			Character adding = tokens[1].charAt(0);
-	    			message.removeAtPosition(message.getCounter() - 1);
-	    		}
-	            //Done, not tested
-	    		else if (tokens[0].equalsIgnoreCase("b")) {
-	    			int pos = Integer.parseInt(tokens[2]);
-	    			message.removeAtPosition(pos);
-	    		}
-	            //Done, somewhat tested.
-	    		else if (tokens[0].equalsIgnoreCase("r")) {
-	    			Character c;
-	    			if (tokens[2].equals("%20")) {
-	    				c = ' ';
-	    			}
-	    			else {
-	    				c = tokens[2].charAt(0);
-	    			}
-	    			int pos = Integer.parseInt(tokens[1]);
-	    			message.addBeforePosition(pos, c);
-	    		}
-	            //Nothing changed, might work?
-	    		else if (tokens[0].equalsIgnoreCase("w")) {
-	    			int first = Integer.parseInt(tokens[1]);
-	    			int second = Integer.parseInt(tokens[2]);
-	    			message.switchPositions(first, second);
-	    		}
-	    		else if (tokens[0].equalsIgnoreCase("x")) {
-	    			int start = Integer.parseInt(tokens[1]);
-	    			int index = line.indexOf("'");
-	    			int end = line.length() - 1;
-	    			String adding = line.substring(index + 1, end);
-	    			pasteString(start, adding);
-	    		}
-	            //Tested once and fixed
-	    		else if (tokens[0].equalsIgnoreCase("p")) {
-	    			int start = Integer.parseInt(tokens[1]);
-	    			int end = Integer.parseInt(tokens[2]);
-	    			cutToClipboard(start + 1, start + end);
-	    		}
-	            //Done?
-	    		else if (tokens[0].equalsIgnoreCase("c")) {
-	    		}
-	    		else if (tokens[0].equalsIgnoreCase("s")) {
-	    			
-	    		}
-	    		else {
-	    			System.out.println("File corrupted");
-	    		}
-	            
+	            try {
+		            //Done, somewhat tested.
+		            if (tokens[0].equalsIgnoreCase("a")) {
+		    			Character adding = tokens[1].charAt(0);
+		    			message.removeAtPosition(message.getCounter() - 1);
+		    		}
+		            //Done, not tested
+		    		else if (tokens[0].equalsIgnoreCase("b")) {
+		    			int pos = Integer.parseInt(tokens[2]);
+		    			message.removeAtPosition(pos);
+		    		}
+		            //Done, somewhat tested.
+		    		else if (tokens[0].equalsIgnoreCase("r")) {
+		    			Character c;
+		    			if (tokens[2].equals("%20")) {
+		    				c = ' ';
+		    			}
+		    			else {
+		    				c = tokens[2].charAt(0);
+		    			}
+		    			int pos = Integer.parseInt(tokens[1]);
+		    			message.addBeforePosition(pos, c);
+		    		}
+		            //Nothing changed, might work?
+		    		else if (tokens[0].equalsIgnoreCase("w")) {
+		    			int first = Integer.parseInt(tokens[1]);
+		    			int second = Integer.parseInt(tokens[2]);
+		    			message.switchPositions(first, second);
+		    		}
+		    		else if (tokens[0].equalsIgnoreCase("x")) {
+		    			int start = Integer.parseInt(tokens[1]);
+		    			int index = line.indexOf("'");
+		    			int end = line.length() - 1;
+		    			String adding = line.substring(index + 1, end);
+		    			pasteString(start, adding);
+		    		}
+		            //Tested once and fixed
+		    		else if (tokens[0].equalsIgnoreCase("p")) {
+		    			int start = Integer.parseInt(tokens[1]);
+		    			int end = Integer.parseInt(tokens[2]);
+		    			cutToClipboard(start + 1, start + end);
+		    		}
+		            //Done?
+		    		else if (tokens[0].equalsIgnoreCase("c")) {
+		    		}
+		    		else if (tokens[0].equalsIgnoreCase("s")) {
+		    			
+		    		}
+	            }
+	            catch (Exception e){
+	            	throw new Exception();
+	            }
 	        }
 	
 	        // Always close files.
@@ -126,7 +131,7 @@ public class UnMix implements IUnMix {
 		if (start < 0 ) {
 			throw new IllegalArgumentException();
 		}
-		if (end > message.getCounter()) {
+		if (end > message.getCounter() - 1) {
 			throw new IllegalArgumentException();
 		}
 		clipboard.deleteAll();
@@ -136,7 +141,7 @@ public class UnMix implements IUnMix {
 	}
 	
 	private void pasteFromClipboard(int start) {
-		if (start < 0 || start > message.getCounter()) {
+		if (start < 0 || start > message.getCounter() - 1) {
 			throw new IllegalArgumentException();
 		}
 		//Iterates through clipboard and adds to message
