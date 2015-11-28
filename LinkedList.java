@@ -57,7 +57,7 @@ public class LinkedList<E> {
 	
 	public E removeAtPosition(int position) {
 		E removed;
-		if (position > counter || position < 0) {
+		if (position > counter - 1 || position < 0) {
 			throw new IllegalArgumentException();
 		}
 		else if (position == 0) {
@@ -78,7 +78,7 @@ public class LinkedList<E> {
 	}
 	
 	public void switchPositions(int first, int second) {
-		if (first > counter || second > counter || first < 0 || second < 0) {
+		if (first > counter - 1 || second > counter - 1 || first < 0 || second < 0) {
 			throw new IllegalArgumentException();
 		}
 		if (second < first) {
