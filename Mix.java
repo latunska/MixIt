@@ -20,7 +20,7 @@ public class Mix implements IMix {
 	
 	private int clipboardLength;
 	
-	private boolean isPaste, isRemoval, isCut;
+	private boolean isPaste, isRemoval, isCut, dontWrite;
 	
 	private Character removed;
 	
@@ -31,7 +31,9 @@ public class Mix implements IMix {
 		isPaste = false;
 		isRemoval = false;
 		isCut = false;
+		dontWrite = false;
 		Scanner scnr = new Scanner(System.in);
+		System.out.println(getInstructions());
 		System.out.println("Enter initial message: ");
 		String input = scnr.nextLine();
 		setInitialMessage(input);
@@ -59,10 +61,13 @@ public class Mix implements IMix {
 						command += " " + removed;
 					}
 				}
-				commands.add(0, command);
+				if (!dontWrite) {
+					commands.add(0, command);
+				}
 				isPaste = false;
 				isRemoval = false;
 				isCut = false;
+				dontWrite = false;
 			}
 		}
 		System.out.println("Final Message: " + message.getFinalMessage());
@@ -125,18 +130,25 @@ public class Mix implements IMix {
 					System.out.println("Could not create file.");
 				}
 			}
+			else if (tokens[0].equalsIgnoreCase("h")) {
+				System.out.println(getInstructions());
+				dontWrite = true;
+			}
 			else {
 				System.out.println("Command not found");
 			}
 		}
 		catch (NumberFormatException e) {
 			System.out.println("Command has a character where a number should be.");
+			dontWrite = true;
 		}
 		catch (IllegalArgumentException e) {
 			System.out.println("Numbers in command out of range or order.");
+			dontWrite = true;
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("Command requires another part.");
+			dontWrite = true;
 		}
 		//Determines if command is in form of 'a x'
 
@@ -223,6 +235,19 @@ public class Mix implements IMix {
 					"Error reading file '" 
 							+ file + "");                  
 		}
+	}
+	
+	public String getInstructions() {
+		String str = "Commands (not case sensitive): " + "\n\tQ\t\t Quit";
+		str += "\n\tH \t\t display this menu again";
+		str += "\n\tb c #\t\t insert character c before position #";
+		str += "\n\tr #\t\t remove character at position #";
+		str += "\n\tw & #\t\t switch characters at positions & and #";
+		str += "\n\tx & #\t\t cut message between positions & and # (inclusive)";
+		str += "\n\tp #\t\t paste from clipboard starting after position #"; //Need to change to before? Would have to change code
+		str += "\n\tc & #\t\t cut message between positions & and # (inclusive)";
+		str += "\n\ts filename\t saves file to unmix message in text file of given name";
+		return str;
 	}
 	
 	public static void main(String[] args) {
