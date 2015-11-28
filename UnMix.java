@@ -149,7 +149,12 @@ public class UnMix implements IUnMix {
 	
 	public void pasteString(int start, String toAdd) {
 		for (int i = 0; i < toAdd.length(); i++) {
-			message.addBeforePosition(start + i, toAdd.charAt(i));
+			if (start == 0) {
+				message.addToEnd(toAdd.charAt(i));
+			}
+			else {
+				message.addBeforePosition(start + i, toAdd.charAt(i));
+			}
 		}
 	}
 	
