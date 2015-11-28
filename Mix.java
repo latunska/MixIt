@@ -32,7 +32,7 @@ public class Mix implements IMix {
 		isRemoval = false;
 		isCut = false;
 		Scanner scnr = new Scanner(System.in);
-		System.out.println("Enter intial message: ");
+		System.out.println("Enter initial message: ");
 		String input = scnr.nextLine();
 		setInitialMessage(input);
 		String command = "";
@@ -80,54 +80,66 @@ public class Mix implements IMix {
 	public String processCommand(String command) {
 		String currentMessage = message.getFinalMessage();
 		String[] tokens = command.split(" ");
-		//Determines if command is in form of 'a x'
-		if (tokens[0].equalsIgnoreCase("a")) {
-			Character adding = tokens[1].charAt(0);
-			message.addToEnd(adding);
-		}
-		else if (tokens[0].equalsIgnoreCase("b")) {
-			Character c = tokens[1].charAt(0);
-			int pos = Integer.parseInt(tokens[2]);
-			message.addBeforePosition(pos, c);
-		}
-		else if (tokens[0].equalsIgnoreCase("r")) {
-			int pos = Integer.parseInt(tokens[1]);
-			removed = message.removeAtPosition(pos);
-			System.out.println(removed);
-			isRemoval = true;
-		}
-		else if (tokens[0].equalsIgnoreCase("w")) {
-			int first = Integer.parseInt(tokens[1]);
-			int second = Integer.parseInt(tokens[2]);
-			message.switchPositions(first, second);
-		}
-		else if (tokens[0].equalsIgnoreCase("x")) {
-			isCut = true;
-			int start = Integer.parseInt(tokens[1]);
-			int end = Integer.parseInt(tokens[2]);
-			cutToClipboard(start, end);
-		}
-		else if (tokens[0].equalsIgnoreCase("p")) {
-			isPaste = true;
-			int start = Integer.parseInt(tokens[1]);
-			pasteFromClipboard(start);
-		}
-		else if (tokens[0].equalsIgnoreCase("c")) {
-			int start = Integer.parseInt(tokens[1]);
-			int end = Integer.parseInt(tokens[2]);
-			copyToClipboard(start, end);
-		}
-		else if (tokens[0].equalsIgnoreCase("s")) {
-			String filename = tokens[1];
-			try {
-				save(filename);
-			} catch (IOException e) {
-				System.out.println("Could not create file.");
+		try {
+			if (tokens[0].equalsIgnoreCase("a")) {
+				Character adding = tokens[1].charAt(0);
+				message.addToEnd(adding);
+			}
+			else if (tokens[0].equalsIgnoreCase("b")) {
+				Character c = tokens[1].charAt(0);
+				int pos = Integer.parseInt(tokens[2]);
+				message.addBeforePosition(pos, c);
+			}
+			else if (tokens[0].equalsIgnoreCase("r")) {
+				int pos = Integer.parseInt(tokens[1]);
+				removed = message.removeAtPosition(pos);
+				System.out.println(removed);
+				isRemoval = true;
+			}
+			else if (tokens[0].equalsIgnoreCase("w")) {
+				int first = Integer.parseInt(tokens[1]);
+				int second = Integer.parseInt(tokens[2]);
+				message.switchPositions(first, second);
+			}
+			else if (tokens[0].equalsIgnoreCase("x")) {
+				isCut = true;
+				int start = Integer.parseInt(tokens[1]);
+				int end = Integer.parseInt(tokens[2]);
+				cutToClipboard(start, end);
+			}
+			else if (tokens[0].equalsIgnoreCase("p")) {
+				isPaste = true;
+				int start = Integer.parseInt(tokens[1]);
+				pasteFromClipboard(start);
+			}
+			else if (tokens[0].equalsIgnoreCase("c")) {
+				int start = Integer.parseInt(tokens[1]);
+				int end = Integer.parseInt(tokens[2]);
+				copyToClipboard(start, end);
+			}
+			else if (tokens[0].equalsIgnoreCase("s")) {
+				String filename = tokens[1];
+				try {
+					save(filename);
+				} catch (IOException e) {
+					System.out.println("Could not create file.");
+				}
+			}
+			else {
+				System.out.println("Command not found");
 			}
 		}
-		else {
-			System.out.println("Command not found");
+		catch (NumberFormatException e) {
+			System.out.println("Command has a character where a number should be.");
 		}
+		catch (IllegalArgumentException e) {
+			System.out.println("Numbers in command out of range or order.");
+		}
+		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Command requires another part.");
+		}
+		//Determines if command is in form of 'a x'
+
 		
 		String str = displayCurrentMessage();
 		return str;
@@ -148,7 +160,7 @@ public class Mix implements IMix {
 	}
 	
 	private void cutToClipboard(int start, int end) {
-		if (start > end || start < 0 || end > message.getCounter()) {
+		if (start > end || start < 0 || end > message.getCounter() - 1) {
 			throw new IllegalArgumentException();
 		}
 		clipboard.deleteAll();
@@ -160,7 +172,7 @@ public class Mix implements IMix {
 	//Note: change to addBeforePosition(start + i - 1,
 	//if needs to paste before given position
 	private void pasteFromClipboard(int start) {
-		if (start < 0 || start > message.getCounter()) {
+		if (start < 0 || start > message.getCounter() - 1) {
 			throw new IllegalArgumentException();
 		}
 		//Iterates through clipboard and adds to message
@@ -173,7 +185,7 @@ public class Mix implements IMix {
 	}
 	
 	private void copyToClipboard(int start, int end) {
-		if (start > end || start < 0 || end > message.getCounter()) {
+		if (start > end || start < 0 || end > message.getCounter() - 1) {
 			throw new IllegalArgumentException();
 		}
 		else {
