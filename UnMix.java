@@ -154,7 +154,7 @@ public class UnMix implements IUnMix {
 	
 	public void pasteString(int start, String toAdd) {
 		for (int i = 0; i < toAdd.length(); i++) {
-			if (start == 0) {
+			if (message.getCounter() == 0) {
 				message.addToEnd(toAdd.charAt(i));
 			}
 			else {
