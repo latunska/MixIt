@@ -71,6 +71,9 @@ public class LinkedList<E> {
 				temp = temp.getNext();
 			}
 			removed = temp.getNext().getData();
+			if (tail == temp.getNext()) {
+				tail = temp;
+			}
 			temp.setNext(temp.getNext().getNext());
 			counter--;
 		}
