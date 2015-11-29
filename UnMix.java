@@ -85,7 +85,7 @@ public class UnMix implements IUnMix {
 		    		else if (tokens[0].equalsIgnoreCase("p")) {
 		    			int start = Integer.parseInt(tokens[1]);
 		    			int end = Integer.parseInt(tokens[2]);
-		    			cutToClipboard(start + 1, start + end);
+		    			cutToClipboard(start, start + end - 1);
 		    		}
 		            //Done?
 		    		else if (tokens[0].equalsIgnoreCase("c")) {
