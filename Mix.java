@@ -180,18 +180,16 @@ public class Mix implements IMix {
 			clipboard.addToEnd(message.removeAtPosition(start));
 		}
 	}
-	
-	//Note: change to addBeforePosition(start + i - 1,
-	//if needs to paste before given position
+
 	private void pasteFromClipboard(int start) {
-		if (start < 0 || start > message.getCounter() - 1) {
+		if (start < 0 || start > message.getCounter()) {
 			throw new IllegalArgumentException();
 		}
 		//Iterates through clipboard and adds to message
 		else {
 			clipboardLength = clipboard.getCounter();
 			for (int i = 1; i < clipboard.getCounter() + 1; i++) {
-				message.addBeforePosition(start + i, clipboard.copyAtPosition(i));
+				message.addBeforePosition(start + i - 1, clipboard.copyAtPosition(i));
 			}
 		}
 	}
