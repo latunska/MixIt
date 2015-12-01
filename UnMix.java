@@ -17,20 +17,20 @@ public class UnMix implements IUnMix {
 	public UnMix() {
 		message = new LinkedList<Character>();
 		clipboard = new LinkedList<Character>();
-		Scanner scnr = new Scanner(System.in);
-		System.out.println("Enter in the mixed up message: ");
-		String message = scnr.nextLine();
-		System.out.println("Enter in file name to unmix message: ");
-		String filename = scnr.nextLine();
+	}
+	
+	public UnMix(String mixed, String file) {
+		message = new LinkedList<Character>();
+		clipboard = new LinkedList<Character>();
 		try {
-			System.out.println(UnMixUsingFile(filename, message));
+			System.out.println(UnMixUsingFile(file, mixed));
 		} catch (Exception e) {
 			System.out.println("File has been corrupted.");
 		}
 	}
 
 	@Override
-	public String UnMixUsingFile(String filename, String mixedMessage) throws Exception {
+	public String UnMixUsingFile(String filename, String mixedMessage) {
 		enterInitialMessage(mixedMessage);
 		// This will reference one line at a time
 	    String line = null;
@@ -42,7 +42,6 @@ public class UnMix implements IUnMix {
 	
 	        // Always wrap FileReader in BufferedReader.
 	        BufferedReader bufferedReader = new BufferedReader(fileReader);
-	
 	        while((line = bufferedReader.readLine()) != null) {
 	            tokens = line.split(" ");
 	            try {
@@ -98,7 +97,6 @@ public class UnMix implements IUnMix {
 	            	throw new Exception();
 	            }
 	        }
-	
 	        // Always close files.
 	        bufferedReader.close();
 	        
@@ -106,15 +104,14 @@ public class UnMix implements IUnMix {
     		return str;
 		}
 	    catch(FileNotFoundException ex) {
-	    	JOptionPane.showMessageDialog(null, 
-	            "Unable to open file '" + 
-	            filename + "");                
+	    	System.out.println("File not found.");
 	    }
 	    catch(IOException ex) {
-	    	JOptionPane.showMessageDialog(null, 
-	            "Error reading file '" 
-	            + filename + "");                  
+	    	System.out.println("Error reading file.");              
 	    }
+		catch (Exception ex) {
+			System.out.println("File corrupted.");
+		}
 		return null;
 	}
 	
@@ -164,6 +161,11 @@ public class UnMix implements IUnMix {
 	}
 	
 	public static void main(String[] args) {
-		UnMix temp = new UnMix();
+		Scanner scnr = new Scanner(System.in);
+		System.out.println("Enter in the mixed up message: ");
+		String message = scnr.nextLine();
+		System.out.println("Enter in file name to unmix message: ");
+		String filename = scnr.nextLine();
+		UnMix temp = new UnMix(message, filename);
 	}
 }
