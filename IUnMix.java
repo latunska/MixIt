@@ -6,6 +6,6 @@ public interface IUnMix {
 	 * the file where the list of undo commands is found. The returned
 	 * string should be the original message. 
 	 * @throws Exception */
-	String UnMixUsingFile (String filename, String mixedMessage) throws Exception;
+	String UnMixUsingFile (String filename, String mixedMessage);
 
 }
