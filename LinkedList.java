@@ -43,13 +43,13 @@ public class LinkedList<E> {
 	public void addToEnd(E data) {
 		//In the case that list is empty
 		if (tail == null) {
-			head = new Node<E>(null, data);
+			head = new Node<E>(data,null);
 			tail = head;
 			counter++;
 		}
 		//Otherwise set tail to new node
 		else {
-			Node<E> temp = new Node<E>(null, data);
+			Node<E> temp = new Node<E>( data,null);
 			tail.setNext(temp);
 			tail = temp;
 			counter++;
@@ -70,7 +70,7 @@ public class LinkedList<E> {
 		}
 		//Adds node to beginning
 		if (position == 0) {
-			Node<E> temp = new Node<E>(head, data);
+			Node<E> temp = new Node<E>(data, head);
 			head = temp;
 			counter++;
 		}
@@ -84,7 +84,7 @@ public class LinkedList<E> {
 			for (int i = 0; i <= position - 2; i++) {
 				temp = temp.getNext();
 			}
-			temp.setNext(new Node<E>(temp.getNext(), data));
+			temp.setNext(new Node<E>(data, temp.getNext()));
 			counter++;
 		}
 	}

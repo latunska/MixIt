@@ -59,4 +59,8 @@ public class UnMixTest {
         			+ "txt", "");
         	assertEquals(original, "Testing all commands.");
 	}
+	@Test
+	public void testConstructUnMix() {
+		UnMix message = new UnMix("","testingAll2.txt");
+	}
 }

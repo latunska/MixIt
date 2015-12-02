@@ -492,4 +492,9 @@ public class MixTest {
 		assertEquals("", userMessage);
 		message.processCommand("s testingAll2.txt");
 	}
+	@Test
+	public void testConstruct() {
+		Mix message = new Mix("Testing all commands.");
+	}
+	
 }
