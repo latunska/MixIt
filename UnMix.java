@@ -1,6 +1,7 @@
 package project4;
 
 import java.io.BufferedReader;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,149 +9,168 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
+/*****************************************************************
+This class allows the user to enter a previously mixed message
+and the file that the list of commands was saved to, and then
+unmixes the message.
+
+@author Carolyn
+@version November 2015
+******************************************************************/
 public class UnMix implements IUnMix {
-	/** Linked list of characters representing a message (string) */ 
+	/** LinkedList of characters representing a message (string) */ 
 	private LinkedList<Character> message;
 	
+	/** LinkedList of characters representing clip board */
 	private LinkedList<Character> clipboard;
 	
+	/*****************************************************************
+	Default constructor for UnMix class. Requires calling methods 
+	individually in order to set initial mixed message and file.
+	******************************************************************/
 	public UnMix() {
 		message = new LinkedList<Character>();
 		clipboard = new LinkedList<Character>();
 	}
 	
+	/*****************************************************************
+	Constructor for Mix class used when provided with message and file
+	ahead of time.
+	
+	@param mixed the mixed up message
+	@param file the file name where the mix commands were stored
+	******************************************************************/
 	public UnMix(String mixed, String file) {
 		message = new LinkedList<Character>();
 		clipboard = new LinkedList<Character>();
-		try {
-			System.out.println(UnMixUsingFile(file, mixed));
-		} catch (Exception e) {
-			System.out.println("File has been corrupted.");
-		}
+		System.out.println(UnMixUsingFile(file, mixed));
 	}
-
+	
+	/*****************************************************************
+	Method used to unmix the message, given the mixed up message and
+	the name of the file.
+	
+	@param filename the filename where the mixing commands were stored
+	@param mixedMessage the mixed up message
+	******************************************************************/
 	@Override
 	public String UnMixUsingFile(String filename, String mixedMessage) {
+		String str;
+		//Puts mixedMessage into LinkedList message
 		enterInitialMessage(mixedMessage);
-		// This will reference one line at a time
 	    String line = null;
 	    String[]tokens;
-	    
+	    //Tries to read file, alerts user to various errors
 		try {
 	        // FileReader reads text files in the default encoding.
 	        FileReader fileReader = new FileReader(filename);
-	
-	        // Always wrap FileReader in BufferedReader.
-	        BufferedReader bufferedReader = new BufferedReader(fileReader);
+	        BufferedReader bufferedReader = new BufferedReader
+	        		(fileReader);
+	        //Goes through each line of file until end is reached
 	        while((line = bufferedReader.readLine()) != null) {
+	        	//Splits commands at spaces
 	            tokens = line.split(" ");
+	            //Attempts to process command
 	            try {
-		            //Done, somewhat tested.
+		            //Processes append commands
 		            if (tokens[0].equalsIgnoreCase("a")) {
-		    			Character adding = tokens[1].charAt(0);
-		    			message.removeAtPosition(message.getCounter() - 1);
+		    			message.removeAtPosition(message.getCounter() 
+		    					- 1);
 		    		}
-		            //Done, not tested
+		            //Process insert commands
 		    		else if (tokens[0].equalsIgnoreCase("b")) {
-		    			int pos = Integer.parseInt(tokens[2]);
+		    			int pos;
+		    			if (tokens.length == 4) {
+		    				pos = Integer.parseInt(tokens[3]);
+		    			}
+		    			else {
+		    				pos = Integer.parseInt(tokens[2]);
+		    			}
 		    			message.removeAtPosition(pos);
 		    		}
-		            //Done, somewhat tested.
+		            //Processes remove commands
 		    		else if (tokens[0].equalsIgnoreCase("r")) {
 		    			Character c;
+		    			//Checks if removed character was space
 		    			if (tokens[2].equals("%20")) {
 		    				c = ' ';
 		    			}
+		    			//Stores character otherwise
 		    			else {
 		    				c = tokens[2].charAt(0);
 		    			}
+		    			//Inserts removed character
 		    			int pos = Integer.parseInt(tokens[1]);
 		    			message.addBeforePosition(pos, c);
 		    		}
-		            //Nothing changed, might work?
+		            //Processes switch commands
 		    		else if (tokens[0].equalsIgnoreCase("w")) {
 		    			int first = Integer.parseInt(tokens[1]);
 		    			int second = Integer.parseInt(tokens[2]);
 		    			message.switchPositions(first, second);
 		    		}
+		            //Processes cut commands
 		    		else if (tokens[0].equalsIgnoreCase("x")) {
 		    			int start = Integer.parseInt(tokens[1]);
+		    			//Gets the string that was cut from message
 		    			int index = line.indexOf("'");
 		    			int end = line.length() - 1;
 		    			String adding = line.substring(index + 1, end);
+		    			//Pastes string back into message
 		    			pasteString(start, adding);
 		    		}
-		            //Tested once and fixed
+		            //Processes paste commands
 		    		else if (tokens[0].equalsIgnoreCase("p")) {
 		    			int start = Integer.parseInt(tokens[1]);
 		    			int end = Integer.parseInt(tokens[2]);
+		    			//Cuts out what was pasted
 		    			cutToClipboard(start, start + end - 1);
-		    		}
-		            //Done?
-		    		else if (tokens[0].equalsIgnoreCase("c")) {
-		    		}
-		    		else if (tokens[0].equalsIgnoreCase("s")) {
-		    			
 		    		}
 	            }
 	            catch (Exception e){
 	            	throw new Exception();
 	            }
 	        }
-	        // Always close files.
+	        // Closes file.
 	        bufferedReader.close();
 	        
-	        String str = message.getFinalMessage();
+	        str = message.getFinalMessage();
     		return str;
 		}
 	    catch(FileNotFoundException ex) {
-	    	System.out.println("File not found.");
+	    	str = "File not found.";
 	    }
 	    catch(IOException ex) {
-	    	System.out.println("Error reading file.");              
+	    	str = "Error reading file.";              
 	    }
 		catch (Exception ex) {
-			System.out.println("File corrupted.");
+			str = "File corrupted.";
 		}
-		return null;
+		return str;
 	}
 	
+	//Enters message into LinkedList message
 	private void enterInitialMessage(String message) {
 		for (int i = 0; i < message.length(); i++) {
 			this.message.addToEnd(message.charAt(i));
 		}
 	}
 	
+	//Cuts out what was pasted
 	private void cutToClipboard(int start, int end) {
-		if (start > end ) {
+		if (start > end  || start < 0 || end > message.getCounter() 
+				- 1) {
 			throw new IllegalArgumentException();
 		}
-		if (start < 0 ) {
-			throw new IllegalArgumentException();
-		}
-		if (end > message.getCounter() - 1) {
-			throw new IllegalArgumentException();
-		}
-		clipboard.deleteAll();
 		for (int i = start; i <= end; i++) {
-			clipboard.addToEnd(message.removeAtPosition(start));
+			message.removeAtPosition(start);
 		}
 	}
 	
-	private void pasteFromClipboard(int start) {
-		if (start < 0 || start > message.getCounter() - 1) {
-			throw new IllegalArgumentException();
-		}
-		//Iterates through clipboard and adds to message
-		else {
-			for (int i = 1; i < clipboard.getCounter() + 1; i++) {
-				message.addBeforePosition(start + i, clipboard.copyAtPosition(i));
-			}
-		}
-	}
-	
-	public void pasteString(int start, String toAdd) {
+	//Pastes given string into message at specified position
+	private void pasteString(int start, String toAdd) {
 		for (int i = 0; i < toAdd.length(); i++) {
+			//Pastes from beginning if message is empty
 			if (message.getCounter() == 0) {
 				message.addToEnd(toAdd.charAt(i));
 			}
@@ -160,6 +180,10 @@ public class UnMix implements IUnMix {
 		}
 	}
 	
+	/*****************************************************************
+	Prompts user to enter in the mixed up message and the file
+	needed to unmix it.
+	******************************************************************/
 	public static void main(String[] args) {
 		Scanner scnr = new Scanner(System.in);
 		System.out.println("Enter in the mixed up message: ");
