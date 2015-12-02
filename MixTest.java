@@ -430,7 +430,7 @@ public class MixTest {
 		assertEquals("Testing all commands.0W", userMessage);
 		userMessage = message.processCommand("a  ");
 		assertEquals("Testing all commands.0W ", userMessage);
-		userMessage = message.processCommand("a");
+		userMessage = message.processCommand("a 4 7");
 		assertEquals("Testing all commands.0W ", userMessage);
 		userMessage = message.processCommand("a");
 		assertEquals("Testing all commands.0W ", userMessage);
@@ -443,6 +443,7 @@ public class MixTest {
 		userMessage = message.processCommand("b $ $");
 		assertEquals("Tet3 sting all commands.0W ", userMessage);
 		userMessage = message.processCommand("b");
+		message.processCommand("b ^ 6 3");
 		assertEquals("Tet3 sting all commands.0W ", userMessage);
 		userMessage = message.processCommand("h");
 		assertEquals("Tet3 sting all commands.0W ", userMessage);
@@ -453,6 +454,7 @@ public class MixTest {
 		userMessage = message.processCommand("r 24");
 		assertEquals("et3 sting all commnds.0W", userMessage);
 		userMessage = message.processCommand("r 24");
+		message.processCommand("r 2 5");
 		assertEquals("et3 sting all commnds.0W", userMessage);
 		userMessage = message.processCommand("r -1");
 		assertEquals("et3 sting all commnds.0W", userMessage);
@@ -465,6 +467,7 @@ public class MixTest {
 		message.processCommand("w -1 22");
 		message.processCommand("w 2 24");
 		message.processCommand("w a b");
+		message.processCommand("w 0 2 5");
 		userMessage = message.processCommand("klsdfjvn???#");
 		assertEquals("0t3 sting all commnds.eW", userMessage);
 		userMessage = message.processCommand("x 4 9");
@@ -473,6 +476,7 @@ public class MixTest {
 		assertEquals("sting 0t3 all commnds.eW", userMessage);
 		message.processCommand("x 14 24");
 		message.processCommand("x -1 2");
+		message.processCommand("x 0 2 10");
 		userMessage = message.processCommand("x d 6");
 		assertEquals("sting 0t3 all commnds.eW", userMessage);
 		userMessage = message.processCommand("p 24");
@@ -483,6 +487,7 @@ public class MixTest {
 		assertEquals("sting 0t3 all co0t3mmnds.eWsting ", userMessage);
 		message.processCommand("p -1");
 		message.processCommand("p 34");
+		message.processCommand("p 3 10");
 		message.processCommand("p e");
 		message.processCommand("c -1 4");
 		userMessage = message.processCommand("c 23 37");
