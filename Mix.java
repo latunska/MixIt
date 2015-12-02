@@ -1,495 +1,417 @@
 package project4;
-import static org.junit.Assert.*;
+//TO FIX? - Does filenotfound catch block work?
+//TO FIX? - check public versus private for helper methods
+//Add more comments inside try block of processCommand
+import java.io.BufferedWriter;
 
-import org.junit.Test;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-public class MixTest {
-	@Test 
-    public void testProcessCommand() {
-        Mix message = new Mix();
-        message.setInitialMessage ("This is a secret message");
-        String userMessage = message.processCommand("b a 0");
-        assertEquals("aThis is a secret message", userMessage);
+/*****************************************************************
+This class allows the user to enter in a message and use various
+commands to mix that message up. Additionally, it optionally stores
+the commands to a file which can later be used to unmix the
+resulting message.
+
+@author Carolyn
+@version November 2015
+******************************************************************/
+
+import javax.swing.JOptionPane;
+
+public class Mix implements IMix {
+	/** Linked list of characters representing a message (string) */ 
+	private LinkedList<Character> message;
+	
+	/** Linked list of characters representing clipboard */
+	private LinkedList<Character> clipboard;
+	
+	/** ArrayList that holds the commands to be saved to text file */
+	private ArrayList<String> commands;
+	
+	/** Number of elements in the clipboard */
+	private int clipboardLength;
+	
+	/** Boolean values specifying if command is any of the following,
+	where dontWrite means not to write command to file */
+	private boolean isPaste, isRemoval, isCut, dontWrite;
+	
+	/** Holds a character that has been removed */
+	private Character removed;
+	
+	/*****************************************************************
+	Default constructor for Mix class. Requires calling methods 
+	individually in order to set message and process commands.
+	******************************************************************/
+	public Mix() {
+		message = new LinkedList<Character>();
+		clipboard = new LinkedList<Character>();
+		commands = new ArrayList<String>();
+		//Sets all 'is__' variables to false
+		isPaste = false;
+		isRemoval = false;
+		isCut = false;
+		//Sets don't write to false
+		dontWrite = false;
 	}
-	@Test
-	public void testRemoveBeginning() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 0");
-		assertEquals("esting remove.", userMessage);
+	
+	/*****************************************************************
+	Constructor for Mix class when provided with initial message to
+	begin with. This automatically prompts user for commands.
+	
+	@param input The user's initial message.
+	******************************************************************/
+	public Mix(String input) {
+		//Instantiates the linkedlists for main message and clipboard
+		message = new LinkedList<Character>();
+		clipboard = new LinkedList<Character>();
+		commands = new ArrayList<String>();
+		//Sets all 'is__' variables to false
+		isPaste = false;
+		isRemoval = false;
+		isCut = false;
+		//Sets don't write to false
+		dontWrite = false;
+		//Instantiates a scanner to prompt user for commands
+		Scanner scnr = new Scanner(System.in);
+		//Sets the initial message
+		setInitialMessage(input);
+		//Displays formatted message to user
+		System.out.println(displayCurrentMessage());
+		String command = "";
+		//Loops until user enters 'Q' or 'q'
+		while (!(command.equalsIgnoreCase("Q"))) {
+			//Prompts user for command and stores in variable
+			System.out.println("Command: ");
+			command = scnr.nextLine();
+			//Breaks out of loops if command is q
+			if (command.equalsIgnoreCase("Q")) {
+				break;
+			}
+			//Else, processes command and displays formatted message
+			else {
+				processCommand(command);
+				System.out.println(displayCurrentMessage());
+			}
+		}
+		//Prints out final message once user enters 'q'
+		System.out.println("Final Message: " + message
+				.getFinalMessage());
 	}
-	@Test
-	public void testRemoveMiddle1() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 4");
-		assertEquals("Testng remove.", userMessage);
+	
+	/*****************************************************************
+	Takes the message the user entered and inputs it into the
+	LinkedList 'message.'
+	
+	@param message The user's original message
+	******************************************************************/
+	@Override
+	public void setInitialMessage(String message) {
+		//Iterates through message and adds each character to list
+		for (int i = 0; i < message.length(); i++) {
+			this.message.addToEnd(message.charAt(i));
+		}
 	}
-	@Test
-	public void testRemoveSpace() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 7");
-		assertEquals("Testingremove.", userMessage);
+	
+	/*****************************************************************
+	Accepts the commands as a parameter and processes them, either
+	changing the message, notifying the user of errors, saving to
+	file, or displaying a help menu.
+	
+	@param command The user's command
+	@return String the message's current state
+	******************************************************************/
+	@Override
+	public String processCommand(String command) {
+//		isPaste = false;
+//		isRemoval = false;
+//		isCut = false;
+//		dontWrite = false;
+		String currentMessage = message.getFinalMessage();
+		//Splits command into array of Strings
+		String[] tokens = command.split(" ");
+		//Attempts to interpret command
+		try {
+			//Processes append commands
+			if (tokens[0].equalsIgnoreCase("a")) {
+				Character adding;
+				//Determines if appending space
+				if (tokens.length == 1 && command.length() >= 3) {
+					adding = ' ';
+				}
+				//Otherwise appends character normally
+				else {
+					adding = tokens[1].charAt(0);
+				}
+				message.addToEnd(adding);
+			}
+			//Processes insert commands
+			else if (tokens[0].equalsIgnoreCase("b")) {
+				Character c;
+				int pos;
+				//Sets position and character if inserting space
+				if (tokens[1].length() == 0) {
+					c = ' ';
+					pos = Integer.parseInt(tokens[3]);
+				}
+				//Sets position and character otherwise
+				else {
+					c = tokens[1].charAt(0);
+					pos = Integer.parseInt(tokens[2]);
+				}
+				message.addBeforePosition(pos, c);
+			}
+			//Processes remove command
+			else if (tokens[0].equalsIgnoreCase("r")) {
+				int pos = Integer.parseInt(tokens[1]);
+				//Saves removed character for unmixing
+				removed = message.removeAtPosition(pos);
+				//Notifies saveCommand to add removed
+				isRemoval = true;
+			}
+			//Processes switch command
+			else if (tokens[0].equalsIgnoreCase("w")) {
+				int first = Integer.parseInt(tokens[1]);
+				int second = Integer.parseInt(tokens[2]);
+				message.switchPositions(first, second);
+			}
+			//Processes cut command
+			else if (tokens[0].equalsIgnoreCase("x")) {
+				//Notifies saveCommand that command is a cut
+				isCut = true;
+				int start = Integer.parseInt(tokens[1]);
+				int end = Integer.parseInt(tokens[2]);
+				cutToClipboard(start, end);
+			}
+			//Processes paste command
+			else if (tokens[0].equalsIgnoreCase("p")) {
+				//Notifies save command that command is a paste
+				isPaste = true;
+				int start = Integer.parseInt(tokens[1]);
+				pasteFromClipboard(start);
+			}
+			//Processes copy command
+			else if (tokens[0].equalsIgnoreCase("c")) {
+				int start = Integer.parseInt(tokens[1]);
+				int end = Integer.parseInt(tokens[2]);
+				copyToClipboard(start, end);
+				dontWrite = true;
+			}
+			//Processes save command
+			else if (tokens[0].equalsIgnoreCase("s")) {
+				String filename = tokens[1];
+				//Tries to save to file and notifies user if error
+				try {
+					save(filename);
+				} catch (IOException e) {
+					System.out.println("Could not create file.");
+				}
+				dontWrite = true;
+			}
+			//Processes help command
+			else if (tokens[0].equalsIgnoreCase("h")) {
+				System.out.println(getInstructions());
+				//Notifies saveCommand to ignore this command
+				dontWrite = true;
+			}
+			//Processes any other input
+			else {
+				System.out.println("Command not found");
+				//Notifies saveCommand to ignore this command
+				dontWrite = true;
+			}
+			saveCommand(command);
+		}
+		//Catches NumFormatException and informs reader of error
+		catch (NumberFormatException e) {
+			System.out.println("Command has a character where a number"
+					+ " should be.");
+		}
+		//Catches IllegalArgumentExceptions (which mean that something
+		//was out of range or in the wrong order)
+		catch (IllegalArgumentException e) {
+			System.out.println("Numbers in command out of range or "
+					+ "order.");
+		}
+		//Catches instances where command is missing a character or two
+		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Command requires another part.");
+		}
+		//Catches instances where command is missing a part
+		catch (StringIndexOutOfBoundsException e) {
+			System.out.println("Command requires another part.");
+		}
+		//Catches any other possible errors
+		catch (Exception e) {
+			System.out.println("Please check command and try again.");
+		}
+		//Returns current message
+		String str = message.getFinalMessage();
+		return str;
 	}
-	@Test
-	public void testRemoveEnd() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 14");
-		assertEquals("Testing remove", userMessage);
+	
+	private String displayCurrentMessage() {
+		//Displays current message with position numbers above
+		String str = "Message: \n\t";
+		//Cycles through numbers for each element plus one
+		for (int i = 0; i < message.getCounter() + 1; i++) {
+			str += i + " ";
+			//Creates even spacing
+			if (i < 10) {
+				str += " ";
+			}
+		}
+		str += "\n\t" + message.getCurrentMessage();
+		return str;
 	}
-	@Test
-	public void testRemoveEndSpace() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove ");
-		String userMessage = message.processCommand("r 14");
-		assertEquals("Testing remove", userMessage);
+	
+	private void cutToClipboard(int start, int end) {
+		//Throws exception if arguments out of order or out of bounds
+		if (start > end || start < 0 || end > message.getCounter() - 1){
+			throw new IllegalArgumentException();
+		}
+		//Erases previous content of clipboard
+		clipboard.deleteAll();
+		//Moves specified letters from message to clipboard
+		for (int i = start; i <= end; i++) {
+			clipboard.addToEnd(message.removeAtPosition(start));
+		}
 	}
-	@Test
-	public void testAppendNumber() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing append.");
-		String userMessage = message.processCommand("a 3");
-		assertEquals("Testing append.3", userMessage);
+
+	private void pasteFromClipboard(int start) {
+		//Throws exception if argument is out of bounds
+		if (start < 0 || start > message.getCounter()) {
+			throw new IllegalArgumentException();
+		}
+		//Iterates through clipboard and adds to message
+		else {
+			clipboardLength = clipboard.getCounter();
+			for (int i = 1; i < clipboard.getCounter() + 1; i++) {
+				message.addBeforePosition(start + i - 1, clipboard
+						.copyAtPosition(i));
+			}
+		}
 	}
-	@Test
-	public void testAppendLetter() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing append.");
-		String userMessage = message.processCommand("a H");
-		assertEquals("Testing append.H", userMessage);
+	
+	private void copyToClipboard(int start, int end) {
+		//Throws exception if arguments are out of bounds or order
+		if (start > end || start < 0 || end > message.getCounter() - 1){
+			throw new IllegalArgumentException();
+		}
+		else {
+			//Erases previous content of clipboard
+			clipboard.deleteAll();
+			//Iterates through message and copies to clipboard
+			for (int i = start + 1; i <= end + 1; i++) {
+				clipboard.addToEnd(message.copyAtPosition(i));
+			}
+		}
 	}
-	@Test
-	public void testAppendOther() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing append.");
-		String userMessage = message.processCommand("a &");
-		assertEquals("Testing append.&", userMessage);
+	/*****************************************************************
+	Saves list of commands to a file
+	
+	@param name Name to save file to
+	@throws IOException Throws if error occurs while saving
+	******************************************************************/
+	public void save(String name) throws IOException {
+		//Creates a new file
+		File file = new File(name);
+		file.createNewFile();
+		//Tries to write to file
+		try {
+			// FileWriter writes text files in the default encoding.
+			FileWriter writer = new FileWriter(file);
+
+			// BufferWriter holds the text
+			BufferedWriter buffer = new BufferedWriter(writer);
+			
+			//Iterates through commands and writes to file
+			for(String i : commands) {
+				buffer.write(i,0,i.length());
+				buffer.newLine();
+			}
+			//Closes buffer
+			buffer.close();         
+		}
+		//Catches exception if file not found
+		catch(FileNotFoundException ex) {
+			JOptionPane.showMessageDialog(null,
+					"Unable to open file '" + 
+							file + "");                
+		}
+		//Catches IOException
+		catch (IOException ex) {
+			JOptionPane.showMessageDialog(null,
+					"Error reading file '" 
+							+ file + "");                  
+		}
 	}
-	@Test
-	public void testAppendSpace() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing append.");
-		String userMessage = message.processCommand("a  ");
-		assertEquals("Testing append. ", userMessage);
+	
+	private static String getInstructions() {
+		//Returns string that constitutes help menu
+		String str = "Commands (not case sensitive): " + "\n\tQ\t\t "
+				+ "Quit";
+		str += "\n\tH \t\t display this menu again";
+		str += "\n\ta c\t\t append character c";
+		str += "\n\tb c #\t\t insert character c before position #";
+		str += "\n\tr #\t\t remove character at position #";
+		str += "\n\tw & #\t\t switch characters at positions & and #";
+		str += "\n\tx & #\t\t cut message between positions & and # "
+				+ "(inclusive)";
+		str += "\n\tp #\t\t paste from clipboard starting before "
+				+ "position #";
+		str += "\n\tc & #\t\t cut message between positions & and # "
+				+ "(inclusive)";
+		str += "\n\ts filename\t saves file to unmix message in text "
+				+ "file of given name";
+		str += "\nTo insert or append a space, type 'space' in place of"
+				+ " the character";
+		return str;
 	}
-	@Test
-	public void testInsertBeginningNumber() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b 5 0");
-		assertEquals("5Testing insert.", userMessage);
+	
+	private void saveCommand(String command) {
+		if (isPaste) {
+			command += " " + clipboardLength;
+		}
+		//If cut, adds contents of clipboard for unmixing
+		if (isCut) {
+			String str = clipboard.getFinalMessage();
+			command += " '" + str + "'";
+		}
+		//If removal, adds letter removed for unmixing
+		if (isRemoval) {
+			//Changes spaces to %20 to be split in unmixing
+			if (removed == ' ') {
+				command += " %20";
+			}
+			//Otherwise just adds removed character
+			else {
+				command += " " + removed;
+			}
+		}
+		//Adds to list of commands iff dontWrite is false
+		if (!dontWrite) {
+			commands.add(0, command);
+		}
+		//Sets all checking variables back to false
+		isPaste = false;
+		isRemoval = false;
+		isCut = false;
+		dontWrite = false;
 	}
-	@Test
-	public void testInsertBeginningOther() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b * 0");
-		assertEquals("*Testing insert.", userMessage);
-	}
-	@Test
-	public void testInsertMiddleNumber() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b 8 5");
-		assertEquals("Testi8ng insert.", userMessage);
-	}
-	@Test
-	public void testInsertMiddleLetter() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b X 8");
-		assertEquals("Testing Xinsert.", userMessage);
-	}
-	@Test
-	public void testInsertEnd() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b # 15");
-		assertEquals("Testing insert.#", userMessage);
-	}
-	@Test
-	public void testSwitchSelf() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("w 3 3");
-		assertEquals("Testing insert.", userMessage);
-	}
-	@Test
-	public void testSwitchMiddle() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 4 12");
-		assertEquals("Testcng switih.", userMessage);
-	}
-	@Test
-	public void testSwitchMiddleOtherOrder() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 12 4");
-		assertEquals("Testcng switih.", userMessage);
-	}
-	@Test
-	public void testSwitchOutsides() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 0 14");
-		assertEquals(".esting switchT", userMessage);
-	}
-	@Test
-	public void testSwitchMiddleWithSpace() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 7 12");
-		assertEquals("Testingcswit h.", userMessage);
-	}
-	@Test
-	public void testCutMiddleLetter() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 4 4");
-		assertEquals("Testng cut.", userMessage);
-	}
-	@Test
-	public void testCutMiddleLetters() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 4 8");
-		assertEquals("Testut.", userMessage);
-	}
-	@Test
-	public void testCutBeginning() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 0 3");
-		assertEquals("ing cut.", userMessage);
-	}
-	@Test
-	public void testCutEnd() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 4 11");
-		assertEquals("Test", userMessage);
-	}
-	@Test
-	public void testCutAll() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 0 11");
-		assertEquals("", userMessage);
-	}
-	@Test
-	public void testPasteMiddleLetter() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		message.processCommand("x 5 5");
-		String userMessage = message.processCommand("p 12");
-		assertEquals("Testig pasten.", userMessage);
-	}
-	@Test
-	public void testPasteMiddleLetters() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		message.processCommand("x 5 9");
-		String userMessage = message.processCommand("p 2");
-		assertEquals("Teng pastiste.", userMessage);
-	}
-	@Test
-	public void testPasteFront() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		message.processCommand("x 1 7");
-		String userMessage = message.processCommand("p 0");
-		assertEquals("esting Tpaste.", userMessage);
-	}
-	@Test
-	public void testPasteEnd() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		message.processCommand("x 4 6");
-		String userMessage = message.processCommand("p 11");
-		assertEquals("Test paste.ing", userMessage);
-	}
-	@Test
-	public void testCopy() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		String userMessage = message.processCommand("c 4 6");
-		assertEquals("Testing copy.", userMessage);
-	}
-	@Test
-	public void testCopyFront() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		message.processCommand("c 0 3");
-		String userMessage = message.processCommand("p 12");
-		assertEquals("Testing copyTest.", userMessage);
-	}
-	@Test
-	public void testCopyEnd() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		message.processCommand("c 8 12");
-		String userMessage = message.processCommand("p 0");
-		assertEquals("copy.Testing copy.", userMessage);
-	}
-	@Test
-	public void testCopyAll() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		message.processCommand("c 0 12");
-		String userMessage = message.processCommand("p 13");
-		assertEquals("Testing copy.Testing copy.", userMessage);
-	}
-	//Tests that save doesn't throw any errors
-	@Test
-	public void testSave() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing save.");
-		String userMessage = message.processCommand("s file.txt");
-		assertEquals("Testing save.", userMessage);
-	}
-	@Test
-	public void testIncorrectAppend() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing append.");
-		String userMessage = message.processCommand("a");
-		assertEquals("Testing append.", userMessage);
-	}
-	@Test
-	public void testIncorrectInsert() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b a i");
-		assertEquals("Testing insert.", userMessage);
-	}
-	@Test
-	public void testIncorrectInsertMissingPart() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing insert.");
-		String userMessage = message.processCommand("b");
-		assertEquals("Testing insert.", userMessage);
-	}
-	@Test
-	public void testIncorrectRemove() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r g");
-		assertEquals("Testing remove.", userMessage);
-	}
-	@Test
-	public void testRemoveMissingPart() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r ");
-		assertEquals("Testing remove.", userMessage);
-	}
-	@Test
-	public void testIncorrectRemoveOutOfBoundsUpper() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 100");
-		assertEquals("Testing remove.", userMessage);
-	}
-	@Test
-	public void testIncorrectRemoveOutOfBoundsLower() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r -1");
-		assertEquals("Testing remove.", userMessage);
-	}
-	@Test
-	public void testIncorrectRemoveBarelyOutOfBounds() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing remove.");
-		String userMessage = message.processCommand("r 15");
-		assertEquals("Testing remove.", userMessage);
-	}
-	@Test
-	public void testIncorrectSwitch() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 2");
-		assertEquals("Testing switch.", userMessage);
-	}
-	@Test
-	public void testIncorrectSwitchOutOfBoundsUpper() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 2 45");
-		assertEquals("Testing switch.", userMessage);
-	}
-	@Test
-	public void testIncorrectSwitchOutOfBoundsLower() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 2 -2");
-		assertEquals("Testing switch.", userMessage);
-	}
-	@Test
-	public void testIncorrectSwitchBarelyOutOfBounds() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 2 15");
-		assertEquals("Testing switch.", userMessage);
-	}
-	@Test
-	public void testIncorrectSwitchCharacter() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing switch.");
-		String userMessage = message.processCommand("w 2 a");
-		assertEquals("Testing switch.", userMessage);
-	}
-	@Test
-	public void testIncorrectCut() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x");
-		assertEquals("Testing cut.", userMessage);
-	}
-	@Test
-	public void testIncorrectCutOutOfBoundsUpper() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 0 30");
-		assertEquals("Testing cut.", userMessage);
-	}
-	@Test
-	public void testIncorrectCutOutOfBoundsLower() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x -1 2");
-		assertEquals("Testing cut.", userMessage);
-	}
-	@Test
-	public void testIncorrectCutChars() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing cut.");
-		String userMessage = message.processCommand("x 0 e");
-		assertEquals("Testing cut.", userMessage);
-	}
-	@Test
-	public void testIncorrectPaste() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		String userMessage = message.processCommand("p ");
-		assertEquals("Testing paste.", userMessage);
-	}
-	@Test
-	public void testIncorrectPasteOutOfBoundsUpper() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		String userMessage = message.processCommand("p 15");
-		assertEquals("Testing paste.", userMessage);
-	}
-	@Test
-	public void testIncorrectPasteOutOfBoundsLower() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		String userMessage = message.processCommand("p -1");
-		assertEquals("Testing paste.", userMessage);
-	}
-	@Test
-	public void testIncorrectPasteChar() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing paste.");
-		String userMessage = message.processCommand("p a");
-		assertEquals("Testing paste.", userMessage);
-	}
-	@Test
-	public void testIncorrectCopy() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		String userMessage = message.processCommand("c 0 ");
-		assertEquals("Testing copy.", userMessage);
-	}
-	@Test
-	public void testIncorrectCopyOutOfBoundsUpper() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		String userMessage = message.processCommand("c 5 13");
-		assertEquals("Testing copy.", userMessage);
-	}
-	@Test
-	public void testIncorrectCopyOutOfBoundsLower() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing copy.");
-		String userMessage = message.processCommand("c -1 3");
-		assertEquals("Testing copy.", userMessage);
-	}
-	@Test
-	public void testAll() {
-		Mix message = new Mix();
-		message.setInitialMessage("Testing all commands.");
-		String userMessage = message.processCommand("H");
-		assertEquals("Testing all commands.", userMessage);
-		userMessage = message.processCommand("a 0");
-		assertEquals("Testing all commands.0", userMessage);
-		userMessage = message.processCommand("a W");
-		assertEquals("Testing all commands.0W", userMessage);
-		userMessage = message.processCommand("a  ");
-		assertEquals("Testing all commands.0W ", userMessage);
-		userMessage = message.processCommand("a");
-		assertEquals("Testing all commands.0W ", userMessage);
-		userMessage = message.processCommand("a");
-		assertEquals("Testing all commands.0W ", userMessage);
-		userMessage = message.processCommand("b t 2");
-		assertEquals("Tetsting all commands.0W ", userMessage);
-		userMessage = message.processCommand("b 3 3");
-		assertEquals("Tet3sting all commands.0W ", userMessage);
-		userMessage = message.processCommand("b   4");
-		assertEquals("Tet3 sting all commands.0W ", userMessage);
-		userMessage = message.processCommand("b $ $");
-		assertEquals("Tet3 sting all commands.0W ", userMessage);
-		userMessage = message.processCommand("b");
-		assertEquals("Tet3 sting all commands.0W ", userMessage);
-		userMessage = message.processCommand("h");
-		assertEquals("Tet3 sting all commands.0W ", userMessage);
-		userMessage = message.processCommand("r 19");
-		assertEquals("Tet3 sting all commnds.0W ", userMessage);
-		userMessage = message.processCommand("r 0");
-		assertEquals("et3 sting all commnds.0W ", userMessage);
-		userMessage = message.processCommand("r 24");
-		assertEquals("et3 sting all commnds.0W", userMessage);
-		userMessage = message.processCommand("r 24");
-		assertEquals("et3 sting all commnds.0W", userMessage);
-		userMessage = message.processCommand("r -1");
-		assertEquals("et3 sting all commnds.0W", userMessage);
-		userMessage = message.processCommand("r a");
-		assertEquals("et3 sting all commnds.0W", userMessage);
-		userMessage = message.processCommand("w 0 22");
-		assertEquals("0t3 sting all commnds.eW", userMessage);
-		userMessage = message.processCommand("w 10 10");
-		assertEquals("0t3 sting all commnds.eW", userMessage);
-		message.processCommand("w -1 22");
-		message.processCommand("w 2 24");
-		message.processCommand("w a b");
-		userMessage = message.processCommand("klsdfjvn???#");
-		assertEquals("0t3 sting all commnds.eW", userMessage);
-		userMessage = message.processCommand("x 4 9");
-		assertEquals("0t3 all commnds.eW", userMessage);
-		userMessage = message.processCommand("p 0");
-		assertEquals("sting 0t3 all commnds.eW", userMessage);
-		message.processCommand("x 14 24");
-		message.processCommand("x -1 2");
-		userMessage = message.processCommand("x d 6");
-		assertEquals("sting 0t3 all commnds.eW", userMessage);
-		userMessage = message.processCommand("p 24");
-		assertEquals("sting 0t3 all commnds.eWsting ", userMessage);
-		userMessage = message.processCommand("c 6 8");
-		assertEquals("sting 0t3 all commnds.eWsting ", userMessage);
-		userMessage = message.processCommand("p 16");
-		assertEquals("sting 0t3 all co0t3mmnds.eWsting ", userMessage);
-		message.processCommand("p -1");
-		message.processCommand("p 34");
-		message.processCommand("p e");
-		message.processCommand("c -1 4");
-		userMessage = message.processCommand("c 23 37");
-		assertEquals("sting 0t3 all co0t3mmnds.eWsting ", userMessage);
-		message.processCommand("s testingAll.txt");
-		userMessage = message.processCommand("x 0 32");
-		assertEquals("", userMessage);
-		message.processCommand("s testingAll2.txt");
+	/*****************************************************************
+	Main method that begins the process of prompting user for input.
+	******************************************************************/
+	public static void main(String[] args) {
+		//Sets up scanner that allows the user to enter initial message
+		Scanner scnr = new Scanner(System.in);
+		System.out.println(getInstructions());
+		System.out.println("Enter initial message: ");
+		String input = scnr.nextLine();
+		Mix temp = new Mix(input);
 	}
 }
