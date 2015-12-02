@@ -1,7 +1,4 @@
 package project4;
-//TO FIX? - Does filenotfound catch block work?
-//TO FIX? - check public versus private for helper methods
-//Add more comments inside try block of processCommand
 import java.io.BufferedWriter;
 
 import java.io.File;
