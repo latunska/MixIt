@@ -348,4 +348,148 @@ public class MixTest {
 		String userMessage = message.processCommand("x");
 		assertEquals("Testing cut.", userMessage);
 	}
+	@Test
+	public void testIncorrectCutOutOfBoundsUpper() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing cut.");
+		String userMessage = message.processCommand("x 0 30");
+		assertEquals("Testing cut.", userMessage);
+	}
+	@Test
+	public void testIncorrectCutOutOfBoundsLower() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing cut.");
+		String userMessage = message.processCommand("x -1 2");
+		assertEquals("Testing cut.", userMessage);
+	}
+	@Test
+	public void testIncorrectCutChars() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing cut.");
+		String userMessage = message.processCommand("x 0 e");
+		assertEquals("Testing cut.", userMessage);
+	}
+	@Test
+	public void testIncorrectPaste() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing paste.");
+		String userMessage = message.processCommand("p ");
+		assertEquals("Testing paste.", userMessage);
+	}
+	@Test
+	public void testIncorrectPasteOutOfBoundsUpper() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing paste.");
+		String userMessage = message.processCommand("p 15");
+		assertEquals("Testing paste.", userMessage);
+	}
+	@Test
+	public void testIncorrectPasteOutOfBoundsLower() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing paste.");
+		String userMessage = message.processCommand("p -1");
+		assertEquals("Testing paste.", userMessage);
+	}
+	@Test
+	public void testIncorrectPasteChar() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing paste.");
+		String userMessage = message.processCommand("p a");
+		assertEquals("Testing paste.", userMessage);
+	}
+	@Test
+	public void testIncorrectCopy() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing copy.");
+		String userMessage = message.processCommand("c 0 ");
+		assertEquals("Testing copy.", userMessage);
+	}
+	@Test
+	public void testIncorrectCopyOutOfBoundsUpper() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing copy.");
+		String userMessage = message.processCommand("c 5 13");
+		assertEquals("Testing copy.", userMessage);
+	}
+	@Test
+	public void testIncorrectCopyOutOfBoundsLower() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing copy.");
+		String userMessage = message.processCommand("c -1 3");
+		assertEquals("Testing copy.", userMessage);
+	}
+	@Test
+	public void testAll() {
+		Mix message = new Mix();
+		message.setInitialMessage("Testing all commands.");
+		String userMessage = message.processCommand("H");
+		assertEquals("Testing all commands.", userMessage);
+		userMessage = message.processCommand("a 0");
+		assertEquals("Testing all commands.0", userMessage);
+		userMessage = message.processCommand("a W");
+		assertEquals("Testing all commands.0W", userMessage);
+		userMessage = message.processCommand("a  ");
+		assertEquals("Testing all commands.0W ", userMessage);
+		userMessage = message.processCommand("a");
+		assertEquals("Testing all commands.0W ", userMessage);
+		userMessage = message.processCommand("a");
+		assertEquals("Testing all commands.0W ", userMessage);
+		userMessage = message.processCommand("b t 2");
+		assertEquals("Tetsting all commands.0W ", userMessage);
+		userMessage = message.processCommand("b 3 3");
+		assertEquals("Tet3sting all commands.0W ", userMessage);
+		userMessage = message.processCommand("b   4");
+		assertEquals("Tet3 sting all commands.0W ", userMessage);
+		userMessage = message.processCommand("b $ $");
+		assertEquals("Tet3 sting all commands.0W ", userMessage);
+		userMessage = message.processCommand("b");
+		assertEquals("Tet3 sting all commands.0W ", userMessage);
+		userMessage = message.processCommand("h");
+		assertEquals("Tet3 sting all commands.0W ", userMessage);
+		userMessage = message.processCommand("r 19");
+		assertEquals("Tet3 sting all commnds.0W ", userMessage);
+		userMessage = message.processCommand("r 0");
+		assertEquals("et3 sting all commnds.0W ", userMessage);
+		userMessage = message.processCommand("r 24");
+		assertEquals("et3 sting all commnds.0W", userMessage);
+		userMessage = message.processCommand("r 24");
+		assertEquals("et3 sting all commnds.0W", userMessage);
+		userMessage = message.processCommand("r -1");
+		assertEquals("et3 sting all commnds.0W", userMessage);
+		userMessage = message.processCommand("r a");
+		assertEquals("et3 sting all commnds.0W", userMessage);
+		userMessage = message.processCommand("w 0 22");
+		assertEquals("0t3 sting all commnds.eW", userMessage);
+		userMessage = message.processCommand("w 10 10");
+		assertEquals("0t3 sting all commnds.eW", userMessage);
+		message.processCommand("w -1 22");
+		message.processCommand("w 2 24");
+		message.processCommand("w a b");
+		userMessage = message.processCommand("klsdfjvn???#");
+		assertEquals("0t3 sting all commnds.eW", userMessage);
+		userMessage = message.processCommand("x 4 9");
+		assertEquals("0t3 all commnds.eW", userMessage);
+		userMessage = message.processCommand("p 0");
+		assertEquals("sting 0t3 all commnds.eW", userMessage);
+		message.processCommand("x 14 24");
+		message.processCommand("x -1 2");
+		userMessage = message.processCommand("x d 6");
+		assertEquals("sting 0t3 all commnds.eW", userMessage);
+		userMessage = message.processCommand("p 24");
+		assertEquals("sting 0t3 all commnds.eWsting ", userMessage);
+		userMessage = message.processCommand("c 6 8");
+		assertEquals("sting 0t3 all commnds.eWsting ", userMessage);
+		userMessage = message.processCommand("p 16");
+		assertEquals("sting 0t3 all co0t3mmnds.eWsting ", userMessage);
+		message.processCommand("p -1");
+		message.processCommand("p 34");
+		message.processCommand("p e");
+		message.processCommand("c -1 4");
+		userMessage = message.processCommand("c 23 37");
+		assertEquals("sting 0t3 all co0t3mmnds.eWsting ", userMessage);
+		message.processCommand("s testingAll.txt");
+		userMessage = message.processCommand("x 0 32");
+		assertEquals("", userMessage);
+		message.processCommand("s testingAll2.txt");
+	}
 }
