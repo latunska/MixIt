@@ -1,4 +1,7 @@
 package project4;
+//TO FIX? - Does filenotfound catch block work?
+//TO FIX? - check public versus private for helper methods
+//Add more comments inside try block of processCommand
 import java.io.BufferedWriter;
 
 import java.io.File;
@@ -20,11 +23,10 @@ resulting message.
 
 import javax.swing.JOptionPane;
 
-import java.util.Scanner;
-
 public class Mix implements IMix {
 	/** Linked list of characters representing a message (string) */ 
 	private LinkedList<Character> message;
+	
 	/** Linked list of characters representing clipboard */
 	private LinkedList<Character> clipboard;
 	
@@ -125,17 +127,21 @@ public class Mix implements IMix {
 	******************************************************************/
 	@Override
 	public String processCommand(String command) {
-//		isPaste = false;
-//		isRemoval = false;
-//		isCut = false;
-//		dontWrite = false;
 		String currentMessage = message.getFinalMessage();
 		//Splits command into array of Strings
 		String[] tokens = command.split(" ");
 		//Attempts to interpret command
 		try {
+			//Checks if command is too long
+			if (tokens.length > 3 && !tokens[0].equalsIgnoreCase("b")) {
+				throw new Exception();
+			}
 			//Processes append commands
 			if (tokens[0].equalsIgnoreCase("a")) {
+				//Checks if command is too long
+				if (tokens.length > 2) {
+					throw new Exception();
+				}
 				Character adding;
 				//Determines if appending space
 				if (tokens.length == 1 && command.length() >= 3) {
@@ -149,6 +155,10 @@ public class Mix implements IMix {
 			}
 			//Processes insert commands
 			else if (tokens[0].equalsIgnoreCase("b")) {
+				//Checks if command is too long
+				if (tokens.length > 4) {
+					throw new Exception();
+				}
 				Character c;
 				int pos;
 				//Sets position and character if inserting space
@@ -158,6 +168,10 @@ public class Mix implements IMix {
 				}
 				//Sets position and character otherwise
 				else {
+					//Checks if command has too many parts
+					if (tokens.length > 3) {
+						throw new Exception();
+					}
 					c = tokens[1].charAt(0);
 					pos = Integer.parseInt(tokens[2]);
 				}
@@ -165,6 +179,10 @@ public class Mix implements IMix {
 			}
 			//Processes remove command
 			else if (tokens[0].equalsIgnoreCase("r")) {
+				//Checks if command has too many parts
+				if (tokens.length > 2) {
+					throw new Exception();
+				}
 				int pos = Integer.parseInt(tokens[1]);
 				//Saves removed character for unmixing
 				removed = message.removeAtPosition(pos);
@@ -187,6 +205,9 @@ public class Mix implements IMix {
 			}
 			//Processes paste command
 			else if (tokens[0].equalsIgnoreCase("p")) {
+				if (tokens.length > 2) {
+					throw new Exception();
+				}
 				//Notifies save command that command is a paste
 				isPaste = true;
 				int start = Integer.parseInt(tokens[1]);
@@ -245,7 +266,7 @@ public class Mix implements IMix {
 		}
 		//Catches any other possible errors
 		catch (Exception e) {
-			System.out.println("Please check command and try again.");
+			System.out.println("Command formmatted incorrectly.");
 		}
 		//Returns current message
 		String str = message.getFinalMessage();
